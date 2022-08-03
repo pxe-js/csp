@@ -17,23 +17,34 @@ declare namespace CSP {
     }
 }
 
+function getHeader(srcs: Record<string, CSP.SrcValue>, reportURI: string) {
+    let headerValue = builder({
+        directives: srcs
+    });
+
+    if (reportURI)
+        headerValue += `; report-uri ${reportURI}; report-to ${reportURI}`;
+
+    return headerValue;
+}
+
 interface CSP extends Middleware { }
 
 class CSP extends Function {
-    private srcs: Record<string, CSP.SrcValue>;
-    private reportURI: string;
+    private headerValue: string;
 
     constructor(readonly options?: CSP.Options) {
         super();
 
         if (options) {
             // Parse srcs
-            this.srcs = {};
+            let srcs = {};
             for (const source in options.src)
-                this.srcs[source + "-src"] = options.src[source];
+                srcs[source + "-src"] = options.src[source];
 
-            this.reportURI = options.report;
-        }
+            this.headerValue = getHeader(srcs, options.report);
+        } else
+            this.headerValue = "default-src 'self'";
 
         return new Proxy(this, {
             apply(target, thisArg, args) {
@@ -43,19 +54,7 @@ class CSP extends Function {
     }
 
     async invoke(ctx: Context, next: NextFunction, ...args: any[]) {
-        let headerValue = "";
-
-        if (!this.srcs)
-            headerValue = "default-src 'self'";
-        else 
-            headerValue = builder({
-                directives: this.srcs
-            });
-
-        if (this.reportURI)
-            headerValue += `; report-uri ${this.reportURI}; report-to ${this.reportURI}`;
-
-        ctx.response.headers["Content-Security-Policy"] = headerValue;
+        ctx.response.headers["Content-Security-Policy"] = this.headerValue;
 
         return next(...args);
     }
