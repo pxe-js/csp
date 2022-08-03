@@ -1,7 +1,7 @@
 {
     "name": "@pxe/csp",
     "version": "1.0.0-alpha.1",
-    "description": "undefined",
+    "description": "Content security policy middleware for PXE.js",
     "main": "index.js",
     "author": "reve-node",
     "license": "MIT",
