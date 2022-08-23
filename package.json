@@ -1,6 +1,6 @@
 {
     "name": "@pxe/csp",
-    "version": "1.0.0-alpha.1",
+    "version": "1.0.0",
     "description": "Content security policy middleware for PXE.js",
     "main": "index.js",
     "author": "reve-node",
